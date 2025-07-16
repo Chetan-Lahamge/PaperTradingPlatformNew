@@ -2,7 +2,7 @@ import streamlit as st
 from tracker.trade_manager_google_sheets import TradeManager
 
 st.set_page_config(page_title="Paper Trading Dashboard", layout="wide")
-st.title("📈 AI Paper Trading Dashboard")
+st.title("📈 Paper Trading Dashboard")
 
 # --------------------- User Login Section ---------------------
 username = st.text_input("Enter Your Username", key="username_input")
