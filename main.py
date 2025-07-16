@@ -35,11 +35,11 @@ if open_trades.empty:
 else:
     for index, row in open_trades.iterrows():
         col1, col2, col3, col4, col5, col6 = st.columns(6)
-        col1.write(row['underlying'])
-        col2.write(row['strike_price'])
-        col3.write(row['option_type'])
-        col4.write(f"₹{row['entry_price']}")
-        col5.write(row['entry_time'])
+        col1.write(row['Underlying'])
+        col2.write(row['Strike Price'])
+        col3.write(row['Option Type'])
+        col4.write(f"₹{row['Entry Price']}")
+        col5.write(row['Entry Time'])
         if col6.button("Exit", key=f"exit_{row['ID']}"):
             exit_price = st.number_input(f"Exit Price for Trade ID {row['ID']}", min_value=0.0, format="%.2f", key=f"exit_price_{row['ID']}")
             if st.button(f"Confirm Exit ID {row['ID']}", key=f"confirm_exit_{row['ID']}"):
@@ -68,6 +68,6 @@ col4.metric("Total Trades", f"{summary['total_trades']}")
 st.subheader("📈 Cumulative P&L Chart")
 cum_pnl_df = tm.get_cumulative_pnl_chart()
 if not cum_pnl_df.empty:
-    st.line_chart(cum_pnl_df.set_index('exit_time')['cumulative_pnl'])
+    st.line_chart(cum_pnl_df.set_index('Exit Time')['cumulative_pnl'])
 else:
     st.info("No closed trades to show P&L chart.")
