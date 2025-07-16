@@ -5,7 +5,6 @@ import streamlit as st  # To access st.secrets
 
 class TradeManager:
     def __init__(self, sheet_name="Paper_Trades"):
-        # ✅ Using service_account_from_dict with st.secrets
         self.gc = gspread.service_account_from_dict(st.secrets["gcp_service_account"])
         self.sheet = self.gc.open(sheet_name)
         self.worksheet = self.sheet.worksheet("Trades")
@@ -15,7 +14,7 @@ class TradeManager:
         if not self.worksheet.row_values(1):
             headers = ["ID", "Underlying", "Strike Price", "Option Type",
                        "Entry Price", "Entry Time", "Exit Price", "Exit Time",
-                       "Status", "PnL"]
+                       "Status", "PnL", "Company Name", "Lot Size"]
             self.worksheet.append_row(headers)
 
     def _get_next_id(self):
@@ -25,11 +24,22 @@ class TradeManager:
         else:
             return records[-1]['ID'] + 1
 
-    def add_trade(self, underlying, strike_price, option_type, entry_price):
+    def _get_default_lot_size(self, underlying):
+        lot_sizes = {
+            'NIFTY': 75,
+            'BANKNIFTY': 35,
+            'FINNIFTY': 65
+        }
+        return lot_sizes.get(underlying.upper(), 1)
+
+    def add_trade(self, underlying, strike_price, option_type, entry_price, lot_size, company_name):
         new_id = self._get_next_id()
         entry_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if underlying != "OTHER":
+            company_name = ""
+            lot_size = self._get_default_lot_size(underlying)
         row = [new_id, underlying, strike_price, option_type,
-               entry_price, entry_time, "", "", "OPEN", ""]
+               entry_price, entry_time, "", "", "OPEN", "", company_name, lot_size]
         self.worksheet.append_row(row)
 
     def exit_trade(self, trade_id, exit_price):
@@ -37,11 +47,13 @@ class TradeManager:
         for idx, record in enumerate(records):
             if record['ID'] == trade_id and record['Status'] == "OPEN":
                 exit_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                pnl = exit_price - float(record['Entry Price'])
+                entry_price = float(record['Entry Price'])
+                lot_size = int(record.get('Lot Size', 1))
+                pnl = (exit_price - entry_price) * lot_size
                 self.worksheet.update_cell(idx + 2, 7, exit_price)  # Exit Price
-                self.worksheet.update_cell(idx + 2, 8, exit_time)    # Exit Time
-                self.worksheet.update_cell(idx + 2, 9, "CLOSED")     # Status
-                self.worksheet.update_cell(idx + 2, 10, pnl)         # PnL
+                self.worksheet.update_cell(idx + 2, 8, exit_time)   # Exit Time
+                self.worksheet.update_cell(idx + 2, 9, "CLOSED")    # Status
+                self.worksheet.update_cell(idx + 2, 10, pnl)        # PnL
                 break
 
     def get_open_trades(self):
