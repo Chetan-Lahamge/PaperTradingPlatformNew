@@ -1,10 +1,12 @@
 import gspread
 import pandas as pd
 from datetime import datetime
+import streamlit as st  # To access st.secrets
 
 class TradeManager:
     def __init__(self, sheet_name="Paper_Trades"):
-        self.gc = gspread.service_account(filename='creds/service_account.json')
+        # ✅ Using service_account_from_dict with st.secrets
+        self.gc = gspread.service_account_from_dict(st.secrets["gcp_service_account"])
         self.sheet = self.gc.open(sheet_name)
         self.worksheet = self.sheet.worksheet("Trades")
         self._setup_sheet()

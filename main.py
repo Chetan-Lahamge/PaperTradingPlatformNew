@@ -40,11 +40,11 @@ else:
         col3.write(row['option_type'])
         col4.write(f"₹{row['entry_price']}")
         col5.write(row['entry_time'])
-        if col6.button("Exit", key=f"exit_{row['id']}"):
-            exit_price = st.number_input(f"Exit Price for Trade ID {row['id']}", min_value=0.0, format="%.2f", key=f"exit_price_{row['id']}")
-            if st.button(f"Confirm Exit ID {row['id']}", key=f"confirm_exit_{row['id']}"):
-                tm.exit_trade(row['id'], exit_price)
-                st.success(f"Trade {row['id']} exited successfully!")
+        if col6.button("Exit", key=f"exit_{row['ID']}"):
+            exit_price = st.number_input(f"Exit Price for Trade ID {row['ID']}", min_value=0.0, format="%.2f", key=f"exit_price_{row['ID']}")
+            if st.button(f"Confirm Exit ID {row['ID']}", key=f"confirm_exit_{row['ID']}"):
+                tm.exit_trade(row['ID'], exit_price)
+                st.success(f"Trade {row['ID']} exited successfully!")
                 st.experimental_rerun()
 
 # --------------------- Closed Trades Section ---------------------
@@ -52,7 +52,7 @@ st.subheader("📄 Closed Trades")
 closed_trades = tm.get_closed_trades()
 
 if not closed_trades.empty:
-    st.dataframe(closed_trades[['underlying', 'strike_price', 'option_type', 'entry_price', 'exit_price', 'pnl', 'entry_time', 'exit_time']])
+    st.dataframe(closed_trades[['Underlying', 'Strike Price', 'Option Type', 'Entry Price', 'Exit Price', 'PnL', 'Entry Time', 'Exit Time']])
 
 # --------------------- Performance Summary ---------------------
 st.subheader("📊 Performance Summary")
