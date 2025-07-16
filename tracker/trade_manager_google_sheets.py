@@ -1,7 +1,13 @@
 import gspread
 import pandas as pd
 from datetime import datetime
+from pytz import timezone
 import streamlit as st  # To access st.secrets
+
+IST = timezone('Asia/Kolkata')
+
+def get_current_ist_time():
+    return datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S")
 
 class TradeManager:
     def __init__(self, sheet_name="Paper_Trades", user="Guest"):
@@ -20,10 +26,7 @@ class TradeManager:
 
     def _get_next_id(self):
         records = self.worksheet.get_all_records()
-        if not records:
-            return 1
-        else:
-            return records[-1]['ID'] + 1
+        return 1 if not records else records[-1]['ID'] + 1
 
     def _get_default_lot_size(self, underlying):
         lot_sizes = {
@@ -35,7 +38,7 @@ class TradeManager:
 
     def add_trade(self, underlying, strike_price, option_type, entry_price, lot_size, company_name, num_lots):
         new_id = self._get_next_id()
-        entry_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        entry_time = get_current_ist_time()
         if underlying != "OTHER":
             company_name = ""
             lot_size = self._get_default_lot_size(underlying)
@@ -48,7 +51,7 @@ class TradeManager:
         records = self.worksheet.get_all_records()
         for idx, record in enumerate(records):
             if record['ID'] == trade_id and record['Status'] == "OPEN" and record['User'] == self.user:
-                exit_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                exit_time = get_current_ist_time()
                 entry_price = float(record['Entry Price'])
                 lot_size = int(record.get('Lot Size', 1))
                 num_lots = int(record.get('Number of Lots', 1))
