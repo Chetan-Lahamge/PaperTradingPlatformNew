@@ -35,7 +35,6 @@ if open_trades.empty:
     st.info("No open trades")
 else:
     open_trades = open_trades.set_index('ID')
-    st.write("Columns:", open_trades.columns.tolist())
     for id, row in open_trades.iterrows():
         col1, col2, col3, col4, col5, col6 = st.columns(6)
         col1.write(id)
@@ -43,10 +42,12 @@ else:
         col3.write(row['Strike Price'])
         col4.write(row['Option Type'])
         col5.write(f"₹{row['Entry Price']}")
-        if col6.button("Exit", key=f"exit_{id}"):
-            exit_price = st.number_input(f"Exit Price for Trade ID {id}", min_value=0.0, format="%.2f", key=f"exit_price_{id}")
-            if st.button(f"Confirm Exit ID {id}", key=f"confirm_exit_{id}"):
-                tm.exit_trade(id, exit_price)
+
+        with col6.form(key=f"exit_form_{id}"):
+            exit_price_input = st.number_input("Exit Price", min_value=0.0, format="%.2f", key=f"exit_price_input_{id}")
+            exit_button = st.form_submit_button("Exit")
+            if exit_button:
+                tm.exit_trade(id, exit_price_input)
                 st.success(f"Trade {id} exited successfully!")
                 st.experimental_rerun()
 
