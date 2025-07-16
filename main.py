@@ -20,11 +20,21 @@ with col3:
 with col4:
     entry_price = st.number_input("Entry Price", min_value=0.0, format="%.2f")
 
+# Additional fields for OTHER
+manual_lot_size = 1
+company_name = ""
+
+if underlying == "OTHER":
+    company_name = st.text_input("Enter Company Name")
+    manual_lot_size = st.number_input("Enter Lot Size for OTHER", min_value=1, step=1)
+
 if st.button("📥 Add Trade"):
     if strike_price == 0 or entry_price == 0.0:
         st.error("❗ Please enter a valid Strike Price and Entry Price (both must be greater than 0)")
+    elif underlying == "OTHER" and not company_name:
+        st.error("❗ Please enter a Company Name for OTHER underlying")
     else:
-        tm.add_trade(underlying, strike_price, option_type, entry_price)
+        tm.add_trade(underlying, strike_price, option_type, entry_price, manual_lot_size, company_name)
         st.success("✅ Trade Added Successfully!")
 
 # --------------------- Open Trades Section ---------------------
@@ -49,14 +59,14 @@ else:
             if exit_button:
                 tm.exit_trade(id, exit_price_input)
                 st.success(f"Trade {id} exited successfully!")
-                st.experimental_rerun()
+                st.rerun()
 
 # --------------------- Closed Trades Section ---------------------
 st.subheader("📄 Closed Trades")
 closed_trades = tm.get_closed_trades()
 
 if not closed_trades.empty:
-    st.dataframe(closed_trades[['Underlying', 'Strike Price', 'Option Type', 'Entry Price', 'Exit Price', 'PnL', 'Entry Time', 'Exit Time']])
+    st.dataframe(closed_trades[['Underlying', 'Strike Price', 'Option Type', 'Entry Price', 'Exit Price', 'PnL', 'Entry Time', 'Exit Time', 'Company Name', 'Lot Size']])
 
 # --------------------- Performance Summary ---------------------
 st.subheader("📊 Performance Summary")
