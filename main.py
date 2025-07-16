@@ -40,6 +40,7 @@ else:
         col3.write(row['Option Type'])
         col4.write(f"₹{row['Entry Price']}")
         col5.write(row['Entry Time'])
+
         if col6.button("Exit", key=f"exit_{row['ID']}"):
             exit_price = st.number_input(f"Exit Price for Trade ID {row['ID']}", min_value=0.0, format="%.2f", key=f"exit_price_{row['ID']}")
             if st.button(f"Confirm Exit ID {row['ID']}", key=f"confirm_exit_{row['ID']}"):
