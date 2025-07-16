@@ -30,22 +30,24 @@ if st.button("📥 Add Trade"):
 # --------------------- Open Trades Section ---------------------
 st.subheader("📝 Open Trades")
 open_trades = tm.get_open_trades()
+
 if open_trades.empty:
     st.info("No open trades")
 else:
-    for index, row in open_trades.iterrows():
+    open_trades = open_trades.set_index('ID')
+    st.write("Columns:", open_trades.columns.tolist())
+    for id, row in open_trades.iterrows():
         col1, col2, col3, col4, col5, col6 = st.columns(6)
-        col1.write(row['Underlying'])
-        col2.write(row['Strike Price'])
-        col3.write(row['Option Type'])
-        col4.write(f"₹{row['Entry Price']}")
-        col5.write(row['Entry Time'])
-
-        if col6.button("Exit", key=f"exit_{row['ID']}"):
-            exit_price = st.number_input(f"Exit Price for Trade ID {row['ID']}", min_value=0.0, format="%.2f", key=f"exit_price_{row['ID']}")
-            if st.button(f"Confirm Exit ID {row['ID']}", key=f"confirm_exit_{row['ID']}"):
-                tm.exit_trade(row['ID'], exit_price)
-                st.success(f"Trade {row['ID']} exited successfully!")
+        col1.write(id)
+        col2.write(row['Underlying'])
+        col3.write(row['Strike Price'])
+        col4.write(row['Option Type'])
+        col5.write(f"₹{row['Entry Price']}")
+        if col6.button("Exit", key=f"exit_{id}"):
+            exit_price = st.number_input(f"Exit Price for Trade ID {id}", min_value=0.0, format="%.2f", key=f"exit_price_{id}")
+            if st.button(f"Confirm Exit ID {id}", key=f"confirm_exit_{id}"):
+                tm.exit_trade(id, exit_price)
+                st.success(f"Trade {id} exited successfully!")
                 st.experimental_rerun()
 
 # --------------------- Closed Trades Section ---------------------
