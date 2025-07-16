@@ -1,13 +1,11 @@
 import streamlit as st
 from tracker.trade_manager_google_sheets import TradeManager
-from datetime import datetime, timedelta
-import pandas as pd
 
 st.set_page_config(page_title="Paper Trading Dashboard", layout="wide")
 st.title("📈 AI Paper Trading Dashboard")
 
 # --------------------- User Login Section ---------------------
-username = st.text_input("Enter Your Username", key="username")
+username = st.text_input("Enter Your Username", key="username_input")
 
 if not username:
     st.warning("Please enter your username to use the app.")
@@ -15,36 +13,37 @@ if not username:
 
 tm = TradeManager(sheet_name="Paper_Trades", user=username)
 
-# --------------------- Trade Entry Section ---------------------
+# --------------------- Trade Entry Section with Auto-Clear ---------------------
 st.subheader("New Trade Entry")
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    underlying = st.selectbox("Underlying", ["NIFTY", "BANKNIFTY", "FINNIFTY", "OTHER"])
-with col2:
-    strike_price = st.number_input("Strike Price", min_value=0)
-with col3:
-    option_type = st.radio("Option Type", ["CE", "PE"], horizontal=True)
-with col4:
-    entry_price = st.number_input("Entry Price", min_value=0.0, format="%.2f")
 
-# Additional fields for OTHER
-manual_lot_size = 1
-company_name = ""
-if underlying == "OTHER":
-    company_name = st.text_input("Enter Company Name")
-    manual_lot_size = st.number_input("Enter Lot Size for OTHER", min_value=1, step=1)
+with st.form("trade_entry_form", clear_on_submit=True):
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        underlying = st.selectbox("Underlying", ["NIFTY", "BANKNIFTY", "FINNIFTY", "OTHER"], key="underlying_select")
+    with col2:
+        strike_price = st.number_input("Strike Price", min_value=0, key="strike_price_input")
+    with col3:
+        option_type = st.radio("Option Type", ["CE", "PE"], horizontal=True, key="option_type_radio")
+    with col4:
+        entry_price = st.number_input("Entry Price", min_value=0.0, format="%.2f", key="entry_price_input")
 
-# Number of Lots Input (for all underlyings)
-number_of_lots = st.number_input("Number of Lots", min_value=1, step=1, value=1)
+    manual_lot_size = 1
+    company_name = ""
+    if underlying == "OTHER":
+        company_name = st.text_input("Enter Company Name", key="company_name_input")
+        manual_lot_size = st.number_input("Enter Lot Size for OTHER", min_value=1, step=1, key="manual_lot_size_input")
 
-if st.button("📥 Add Trade"):
-    if strike_price == 0 or entry_price == 0.0:
-        st.error("❗ Please enter a valid Strike Price and Entry Price (both must be greater than 0)")
-    elif underlying == "OTHER" and not company_name:
-        st.error("❗ Please enter a Company Name for OTHER underlying")
-    else:
-        tm.add_trade(underlying, strike_price, option_type, entry_price, manual_lot_size, company_name, number_of_lots)
-        st.success("✅ Trade Added Successfully!")
+    number_of_lots = st.number_input("Number of Lots", min_value=1, step=1, value=1, key="number_of_lots_input")
+
+    submitted = st.form_submit_button("📥 Add Trade")
+    if submitted:
+        if strike_price == 0 or entry_price == 0.0:
+            st.error("❗ Please enter a valid Strike Price and Entry Price (both must be greater than 0)")
+        elif underlying == "OTHER" and not company_name:
+            st.error("❗ Please enter a Company Name for OTHER underlying")
+        else:
+            tm.add_trade(underlying, strike_price, option_type, entry_price, manual_lot_size, company_name, number_of_lots)
+            st.success("✅ Trade Added Successfully!")
 
 # --------------------- Open Trades Section ---------------------
 st.subheader("📝 Open Trades")
@@ -84,7 +83,6 @@ if not closed_trades.empty:
 
 # --------------------- Performance Summary ---------------------
 st.subheader("📊 Performance Summary")
-
 summary = tm.get_summary()
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Total P&L", f"₹{summary['total_pnl']:.2f}")
