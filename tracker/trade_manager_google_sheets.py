@@ -14,7 +14,7 @@ class TradeManager:
         if not self.worksheet.row_values(1):
             headers = ["ID", "Underlying", "Strike Price", "Option Type",
                        "Entry Price", "Entry Time", "Exit Price", "Exit Time",
-                       "Status", "PnL", "Company Name", "Lot Size"]
+                       "Status", "PnL", "Company Name", "Lot Size", "Investment"]
             self.worksheet.append_row(headers)
 
     def _get_next_id(self):
@@ -38,8 +38,9 @@ class TradeManager:
         if underlying != "OTHER":
             company_name = ""
             lot_size = self._get_default_lot_size(underlying)
+        investment = entry_price * lot_size
         row = [new_id, underlying, strike_price, option_type,
-               entry_price, entry_time, "", "", "OPEN", "", company_name, lot_size]
+               entry_price, entry_time, "", "", "OPEN", "", company_name, lot_size, investment]
         self.worksheet.append_row(row)
 
     def exit_trade(self, trade_id, exit_price):

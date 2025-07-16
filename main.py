@@ -46,14 +46,16 @@ if open_trades.empty:
 else:
     open_trades = open_trades.set_index('ID')
     for id, row in open_trades.iterrows():
-        col1, col2, col3, col4, col5, col6 = st.columns(6)
+        col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
         col1.write(id)
         col2.write(row['Underlying'])
         col3.write(row['Strike Price'])
         col4.write(row['Option Type'])
         col5.write(f"₹{row['Entry Price']}")
+        col6.write(f"Lot: {row['Lot Size']}")
+        col7.write(f"Investment: ₹{row['Entry Price'] * row['Lot Size']}")
 
-        with col6.form(key=f"exit_form_{id}"):
+        with st.form(key=f"exit_form_{id}"):
             exit_price_input = st.number_input("Exit Price", min_value=0.0, format="%.2f", key=f"exit_price_input_{id}")
             exit_button = st.form_submit_button("Exit")
             if exit_button:
